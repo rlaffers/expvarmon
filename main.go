@@ -59,7 +59,6 @@ func main() {
 	initConfiguration()
 
 	DefaultEndpoint = endpoint
-	fmt.Printf("endpoint = %+v\n", endpoint) // TODO delete
 
 	// Process ports/urls
 	ports, _ := ParsePortsSlice(urls)
