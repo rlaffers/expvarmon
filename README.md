@@ -21,6 +21,9 @@ Go apps console monitoring tool with TOML configuration support. Minimal configu
 * Auto-resize on font-size change or window resize
 * Uses amazing [TermUI](https://github.com/gizak/termui) library by [gizak](https://github.com/gizak)
 
+## Configuration file
+The program works with CLI arguments as normal. In addition, you have the option of using a [TOML](https://github.com/toml-lang/toml)-formatted configuration file. To start things off, simply copy *config.toml.example* to *config.toml*. Edit config.toml at your leisure.
+
 ## Demo
 
 ### Multiple apps mode
