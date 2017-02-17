@@ -27,6 +27,21 @@ func ParseVars(vars string) ([]VarName, error) {
 	return ret, nil
 }
 
+// ParseVarsSlice returns parsed and validated slice of strings with
+// variables names that will be used for monitoring.
+func ParseVarsSlice(vars []string) ([]VarName, error) {
+	if len(vars) == 0 {
+		return nil, errors.New("no vars specified")
+	}
+
+	//ss := strings.FieldsFunc(vars, func(r rune) bool { return r == ',' })
+	var ret []VarName
+	for _, s := range vars {
+		ret = append(ret, VarName(s))
+	}
+	return ret, nil
+}
+
 // BaseCommand returns cleaned command name from Cmdline array.
 //
 // I.e. "./some.service/binary.name -arg 1 -arg" will be "binary.name".
@@ -70,6 +85,28 @@ func flattenURLs(rawurl string, ports []string) ([]url.URL, error) {
 func ParsePorts(s string) ([]url.URL, error) {
 	var urls []url.URL
 	fields := strings.FieldsFunc(s, func(r rune) bool { return r == ',' })
+	for _, field := range fields {
+		rawurl, portsRange := extractURLAndPorts(field)
+
+		ports, err := parseRange(portsRange)
+		if err != nil {
+			return nil, ErrParsePorts
+		}
+
+		purls, err := flattenURLs(rawurl, ports)
+		if err != nil {
+			return nil, ErrParsePorts
+		}
+
+		urls = append(urls, purls...)
+	}
+
+	return urls, nil
+}
+
+// ParsePortsSlice parses and flattens comma-separated ports/urls into URLs slice
+func ParsePortsSlice(fields []string) ([]url.URL, error) {
+	var urls []url.URL
 	for _, field := range fields {
 		rawurl, portsRange := extractURLAndPorts(field)
 

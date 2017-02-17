@@ -6,7 +6,7 @@ TermUI based Go apps monitor using [expvars](http://golang.org/pkg/expvar/) vari
 
 ## Introduction
 
-Go apps console monitoring tool. Minimal configuration efforts. Quick and easy monitoring solution for one or multiple services.
+Go apps console monitoring tool with TOML configuration support. Minimal configuration efforts. Quick and easy monitoring solution for one or multiple services.
 
 ## Features
 

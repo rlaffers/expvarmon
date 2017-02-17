@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -9,26 +8,62 @@ import (
 	"time"
 
 	"gopkg.in/gizak/termui.v1"
+
+	flag "github.com/spf13/pflag"
+	"github.com/spf13/viper"
 )
 
+// Structure of all arguments (CLI or config items) to this program
+type arguments struct {
+	interval time.Duration
+	ports    string
+	vars     string
+	dummy    bool
+	self     bool
+	endpoint string
+}
+
 var (
-	interval = flag.Duration("i", 5*time.Second, "Polling interval")
-	urls     = flag.String("ports", "", "Ports/URLs for accessing services expvars (start-end,port2,port3,https://host:port)")
-	varsArg  = flag.String("vars", "mem:memstats.Alloc,mem:memstats.Sys,mem:memstats.HeapAlloc,mem:memstats.HeapInuse,duration:memstats.PauseNs,duration:memstats.PauseTotalNs", "Vars to monitor (comma-separated)")
-	dummy    = flag.Bool("dummy", false, "Use dummy (console) output")
-	self     = flag.Bool("self", false, "Monitor itself")
-	endpoint = flag.String("endpoint", DefaultEndpoint, "URL endpoint for expvars")
+	defaults arguments = arguments{
+		interval: 5 * time.Second,
+		ports:    "",
+		vars:     "mem:memstats.Alloc,mem:memstats.Sys,mem:memstats.HeapAlloc,mem:memstats.HeapInuse,duration:memstats.PauseNs,duration:memstats.PauseTotalNs",
+		dummy:    false,
+		self:     false,
+		endpoint: "/debug/vars",
+	}
+
+	interval time.Duration
+	_        = flag.Duration("i", defaults.interval, "Polling interval")
+
+	urls []string
+	_    = flag.String("ports", defaults.ports, "Ports/URLs for accessing services expvars (start-end,port2,port3,https://host:port)")
+
+	varsArg []string
+	_       = flag.String("vars", defaults.vars, "Vars to monitor (comma-separated)")
+
+	dummy bool
+	_     = flag.Bool("dummy", defaults.dummy, "Use dummy (console) output")
+
+	self bool
+	_    = flag.Bool("self", defaults.self, "Monitor itself")
+
+	endpoint string
+	_        = flag.String("endpoint", defaults.endpoint, "URL endpoint for expvars")
 )
 
 func main() {
 	flag.Usage = Usage
 	flag.Parse()
 
-	DefaultEndpoint = *endpoint
+	initConfiguration()
+
+	DefaultEndpoint = endpoint
+	fmt.Printf("endpoint = %+v\n", endpoint) // TODO delete
 
 	// Process ports/urls
-	ports, _ := ParsePorts(*urls)
-	if *self {
+	ports, _ := ParsePortsSlice(urls)
+	if self {
 		port, err := StartSelfMonitor()
 		if err == nil {
 			ports = append(ports, port)
@@ -39,14 +74,14 @@ func main() {
 		Usage()
 		os.Exit(1)
 	}
-	if *interval <= 0 {
+	if interval <= 0 {
 		fmt.Fprintln(os.Stderr, "update interval is not valid. Valid examples: 5s, 1m, 1h30m")
 		Usage()
 		os.Exit(1)
 	}
 
 	// Process vars
-	vars, err := ParseVars(*varsArg)
+	vars, err := ParseVarsSlice(varsArg)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -65,7 +100,7 @@ func main() {
 	} else {
 		ui = &TermUISingle{}
 	}
-	if *dummy {
+	if dummy {
 		ui = &DummyUI{}
 	}
 
@@ -74,7 +109,7 @@ func main() {
 	}
 	defer ui.Close()
 
-	tick := time.NewTicker(*interval)
+	tick := time.NewTicker(interval)
 	evtCh := termui.EventCh()
 
 	UpdateAll(ui, data)
@@ -121,4 +156,42 @@ Examples:
 
 For more details and docs, see README: http://github.com/divan/expvarmon
 `, progname, progname, progname, progname)
+}
+
+// initConfiguration loads the configuration file.
+func initConfiguration() {
+
+	viper.SetConfigName("config")
+	viper.AddConfigPath("$HOME/.expvarmon")
+	viper.AddConfigPath(".")
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	}
+
+	// set default values
+	viper.SetDefault("interval", defaults.interval)
+	viper.SetDefault("ports", defaults.ports)
+	viper.SetDefault("vars", defaults.vars)
+	viper.SetDefault("dummy", defaults.dummy)
+	viper.SetDefault("self", defaults.self)
+	viper.SetDefault("endpoint", defaults.endpoint)
+
+	// bind viper config options to flags
+	viper.BindPFlag("i", flag.Lookup("interval"))
+	viper.BindPFlag("ports", flag.Lookup("ports"))
+	viper.BindPFlag("vars", flag.Lookup("vars"))
+	viper.BindPFlag("dummy", flag.Lookup("dummy"))
+	viper.BindPFlag("self", flag.Lookup("self"))
+	viper.BindPFlag("endpoint", flag.Lookup("endpoint"))
+
+	// assign viper-provided values to the global configuration variables
+	interval = viper.GetDuration("interval")
+
+	dummy = viper.GetBool("dummy")
+	urls = viper.GetStringSlice("ports")
+	varsArg = viper.GetStringSlice("vars")
+	self = viper.GetBool("self")
+	endpoint = viper.GetString("endpoint")
+
 }

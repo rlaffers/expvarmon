@@ -1,0 +1,31 @@
+# No need to define all items. Commented options will have default values.
+
+# Polling interval in nanoseconds. 1 second = 1e9
+interval = 5e9
+
+# Ports/URLs for accessing services expvars. Each item may be specified in one of the following formats:
+#     port number: E.g. "1234"
+#     start-end: E.g. "1234-1300"
+#     full URL: E.g. "http://127.0.0.1:1234"
+ports = [
+    "http://127.0.0.1:8080",
+]
+
+# URL endpoint for expvars
+#endpoint = "/debug/vars"
+
+# Use dummy (console) output
+#dummy = false
+
+# Monitor itself
+#self = false
+
+vars = [
+    "mem:memstats.Alloc",
+    "mem:memstats.Sys",
+    "mem:memstats.HeapAlloc",
+    "mem:memstats.HeapInuse",
+    "duration:memstats.PauseNs",
+    "duration:memstats.PauseTotalNs"
+    #"total_messages"
+]
