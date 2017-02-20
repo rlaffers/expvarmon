@@ -45,6 +45,30 @@ func TestVarName(t *testing.T) {
 		t.Fatalf("Expecting kind to be %v, but got: %v", KindDuration, kind)
 	}
 
+	v = VarName("time:DateTime.API.NowTime")
+	kind = v.Kind()
+	if kind != KindTime {
+		t.Fatalf("Expecting kind to be %v, but got: %v", KindTime, kind)
+	}
+
+	v = VarName("date:DateTime.API.NowDate")
+	kind = v.Kind()
+	if kind != KindDate {
+		t.Fatalf("Expecting kind to be %v, but got: %v", KindDate, kind)
+	}
+
+	v = VarName("time:DateTime.API.NowDateTime")
+	kind = v.Kind()
+	if kind != KindDateTime {
+		t.Fatalf("Expecting kind to be %v, but got: %v", KindDateTime, kind)
+	}
+
+	v = VarName("time:DateTime.API.NowFuzzy")
+	kind = v.Kind()
+	if kind != KindFuzzyTime {
+		t.Fatalf("Expecting kind to be %v, but got: %v", KindFuzzyTime, kind)
+	}
+
 	// single \. escapes the dot
 	v = VarName(`bleve.indexes.bench\.bleve.index.lookup_queue_len`)
 

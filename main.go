@@ -9,6 +9,7 @@ import (
 
 	"gopkg.in/gizak/termui.v1"
 
+	"github.com/Sirupsen/logrus"
 	flag "github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -21,6 +22,7 @@ type arguments struct {
 	dummy    bool
 	self     bool
 	endpoint string
+	debug    bool
 }
 
 var (
@@ -31,6 +33,7 @@ var (
 		dummy:    false,
 		self:     false,
 		endpoint: "/debug/vars",
+		debug:    false,
 	}
 
 	interval time.Duration
@@ -50,13 +53,26 @@ var (
 
 	endpoint string
 	_        = flag.String("endpoint", defaults.endpoint, "URL endpoint for expvars")
+
+	debug bool
+	_     = flag.Bool("debug", defaults.debug, "Turn debugging mode on")
+
+	logger *logrus.Logger
 )
+
+func init() {
+	logger = logrus.New()
+}
 
 func main() {
 	flag.Usage = Usage
 	flag.Parse()
 
 	initConfiguration()
+
+	if debug {
+		logger.Level = logrus.DebugLevel
+	}
 
 	DefaultEndpoint = endpoint
 
@@ -175,6 +191,7 @@ func initConfiguration() {
 	viper.SetDefault("dummy", defaults.dummy)
 	viper.SetDefault("self", defaults.self)
 	viper.SetDefault("endpoint", defaults.endpoint)
+	viper.SetDefault("debug", defaults.debug)
 
 	// bind viper config options to flags
 	viper.BindPFlag("i", flag.Lookup("interval"))
@@ -183,6 +200,7 @@ func initConfiguration() {
 	viper.BindPFlag("dummy", flag.Lookup("dummy"))
 	viper.BindPFlag("self", flag.Lookup("self"))
 	viper.BindPFlag("endpoint", flag.Lookup("endpoint"))
+	viper.BindPFlag("debug", flag.Lookup("debug"))
 
 	// assign viper-provided values to the global configuration variables
 	interval = viper.GetDuration("interval")

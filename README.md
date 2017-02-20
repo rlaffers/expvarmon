@@ -135,3 +135,7 @@ Vars are specified as a comma-separated list of var identifiers with (optional) 
 | mem:      | renders int64 as memory string (KB, MB, etc) |
 | duration: | renders int64 as time.Duration (1s, 2ms, 12h23h) |
 | str:      | doesn't display sparklines chart for this value, just display as string |
+| time:     | renders datetime strings (as returned by [time.String()](https://godoc.org/time#Time.String)) as 24-hour based time strings |
+| date:     | renders datetime strings (as returned by [time.String()](https://godoc.org/time#Time.String)) as date strings |
+| datetime: | renders datetime strings (as returned by [time.String()](https://godoc.org/time#Time.String)) as date-time strings |
+| fuzzytime: | renders datetime strings (as returned by [time.String()](https://godoc.org/time#Time.String)) as fuzzy-time strings |

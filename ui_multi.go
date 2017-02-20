@@ -227,6 +227,14 @@ func colorByKind(kind VarKind) termui.Attribute {
 		return termui.ColorYellow | termui.AttrBold
 	case KindString:
 		return termui.ColorGreen | termui.AttrBold
+	case KindTime:
+		return termui.ColorWhite | termui.AttrBold
+	case KindDate:
+		return termui.ColorWhite | termui.AttrBold
+	case KindDateTime:
+		return termui.ColorWhite | termui.AttrBold
+	case KindFuzzyTime:
+		return termui.ColorWhite | termui.AttrBold
 	default:
 		return termui.ColorBlue | termui.AttrBold
 	}

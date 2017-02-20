@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ararog/timeago"
 	"github.com/pyk/byten"
 )
 
@@ -27,6 +28,10 @@ const (
 	KindMemory
 	KindDuration
 	KindString
+	KindTime
+	KindDate
+	KindDateTime
+	KindFuzzyTime
 )
 
 // ToSlice converts "dot-separated" notation into the "slice of strings".
@@ -76,6 +81,14 @@ func (v VarName) Kind() VarKind {
 		return KindDuration
 	case "str":
 		return KindString
+	case "time":
+		return KindTime
+	case "date":
+		return KindDate
+	case "datetime":
+		return KindDateTime
+	case "fuzzytime":
+		return KindFuzzyTime
 	}
 	return KindDefault
 }
@@ -93,6 +106,43 @@ func Format(v VarValue, kind VarKind) string {
 			break
 		}
 		return fmt.Sprintf("%s", roundDuration(time.Duration(v.(int64))))
+
+	case KindTime:
+		t, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", fmt.Sprintf("%s", v))
+		if err != nil {
+			logger.Errorf("Invalid format of a datetime var: %v (%s)", v, err)
+			break
+		}
+		return t.Format("15:04:05")
+
+	case KindDate:
+		t, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", fmt.Sprintf("%s", v))
+		if err != nil {
+			logger.Errorf("Invalid format of a datetime var: %v (%s)", v, err)
+			break
+		}
+		return t.Format("2006-01-02")
+
+	case KindDateTime:
+		t, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", fmt.Sprintf("%s", v))
+		if err != nil {
+			logger.Errorf("Invalid format of a datetime var: %v (%s)", v, err)
+			break
+		}
+		return t.Format("2006-01-02 15:04:05")
+
+	case KindFuzzyTime:
+		t, err := time.Parse("2006-01-02 15:04:05.999999999 -0700 MST", fmt.Sprintf("%s", v))
+		if err != nil {
+			logger.Errorf("Invalid format of a datetime var: %v (%s)", v, err)
+			break
+		}
+		if fuzzy, err := timeago.TimeAgoFromNowWithTime(t); err != nil {
+			logger.Errorf("Failed to format a datetime var as fuzzy time: %v (%s)", v, err)
+			break
+		} else {
+			return fuzzy
+		}
 	}
 
 	if f, ok := v.(float64); ok {
